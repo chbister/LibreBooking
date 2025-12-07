@@ -1,0 +1,70 @@
+name: Sync from upstream and build image
+
+on:
+  schedule:
+    - cron: "0 3 * * *"    # täglich um 03:00 UTC
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:        # manueller Start per Button
+
+jobs:
+  sync-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # wichtig für Merge
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/LibreBooking/app.git || true
+          git fetch upstream
+
+      - name: Merge upstream into default branch
+        run: |
+          # Wenn dein Default-Branch "master" ist, hier anpassen
+          DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD | sed 's@origin/@@')
+
+          git checkout "$DEFAULT_BRANCH"
+
+          # Versuche Fast-Forward-Merge (keine Konflikte, sauberer Verlauf)
+          git merge --ff-only "upstream/$DEFAULT_BRANCH" || echo "Kein Fast-Forward möglich – bitte manuell mergen."
+
+          # Nur pushen, wenn es wirklich neue Commits gibt
+          if ! git diff --quiet "origin/$DEFAULT_BRANCH"...HEAD; then
+            git push origin "$DEFAULT_BRANCH"
+          else
+            echo "Keine Änderungen zum Pushen."
+          fi
+
+      - name: Log in to Docker Hub
+        # nur ausführen, wenn der Merge-Schritt nicht hart gescheitert ist
+        if: success()
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        if: success()
+        run: |
+          DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD | sed 's@origin/@@')
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/librebooking-nginx"
+
+          echo "Baue Image ${IMAGE_NAME}:${DEFAULT_BRANCH} und :latest"
+          docker build -t "${IMAGE_NAME}:${DEFAULT_BRANCH}" -t "${IMAGE_NAME}:latest" .
+
+      - name: Push Docker image
+        if: success()
+        run: |
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/librebooking-nginx"
+          docker push "${IMAGE_NAME}:latest"
+          docker push "${IMAGE_NAME}:main" || true
+          docker push "${IMAGE_NAME}:master" || true
