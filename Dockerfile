@@ -20,4 +20,4 @@ RUN apk add --no-cache git \
 
 VOLUME ["/config", "/var/www/html/Web/uploads/images", "/var/www/html/Web/uploads/reservation"]
 
-USER application
+#USER application
