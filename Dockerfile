@@ -9,14 +9,13 @@ COPY . /var/www/html
 
 RUN apk add --no-cache git \
     && mkdir -p /config \
-    && mkdir tpl_c \
     && cp config/config.dist.php /config/config.dist.php \
     && composer install \
          --no-dev \
          --no-interaction \
          --optimize-autoloader \
          --working-dir=/var/www/html \
-    && mkdir -p Web/uploads/images Web/uploads/reservation \
+    && mkdir -p Web/uploads/images Web/uploads/reservation tpl_c \
     && chown -R application:application /var/www/html /config
 
 RUN mkdir -p /var/log/librebooking/log \
