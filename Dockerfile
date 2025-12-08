@@ -21,6 +21,8 @@ RUN apk add --no-cache git \
 RUN mkdir -p /var/log/librebooking/log \
     && chown -R application:application /var/log/librebooking
 
+COPY vhost.conf /opt/docker/etc/nginx/vhost.conf
+
 VOLUME ["/config", "/var/www/html/Web/uploads/images", "/var/www/html/Web/uploads/reservation"]
 
 #USER application
