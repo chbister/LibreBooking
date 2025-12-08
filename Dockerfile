@@ -9,7 +9,7 @@ COPY . /var/www/html
 
 RUN apk add --no-cache git \
     && mkdir -p /config \
-    && mkdir tpl_c
+    && mkdir tpl_c \
     && cp config/config.dist.php /config/config.dist.php \
     && composer install \
          --no-dev \
