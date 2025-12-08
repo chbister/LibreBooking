@@ -16,8 +16,9 @@ RUN apk add --no-cache git \
          --optimize-autoloader \
          --working-dir=/var/www/html \
     && mkdir -p Web/uploads/images Web/uploads/reservation \
-    && chown -R application:application /var/www/html /config
+    && chown -R application:application /var/www/html /config \
     && chown -R application:application /var/www/html /tpl_c
+
 RUN mkdir -p /var/log/librebooking/log \
     && chown -R application:application /var/log/librebooking
 
