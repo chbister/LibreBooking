@@ -58,7 +58,7 @@ jobs:
         run: |
           #DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD | sed 's@origin/@@')
           DEFAULT_BRANCH=develop
-          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/librebooking-nginx"
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/librebooking-apache"
 
           echo "Baue Image ${IMAGE_NAME}:${DEFAULT_BRANCH} und :latest"
           docker build -t "${IMAGE_NAME}:${DEFAULT_BRANCH}" -t "${IMAGE_NAME}:latest" .

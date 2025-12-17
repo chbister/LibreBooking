@@ -1,11 +1,11 @@
-FROM webdevops/php-nginx:8.2-alpine
+FROM webdevops/php-apache:8.4-alpine
 
-ENV WEB_DOCUMENT_ROOT=/var/www/html/Web \
-    WEB_DOCUMENT_INDEX=index.php
+#ENV WEB_DOCUMENT_ROOT=/app/Web \
+#    WEB_DOCUMENT_INDEX=index.php
 
-WORKDIR /var/www/html
+WORKDIR /app
 
-COPY . /var/www/html
+COPY . /app
 
 RUN apk add --no-cache git \
     && mkdir -p /config \
@@ -14,13 +14,13 @@ RUN apk add --no-cache git \
          --no-dev \
          --no-interaction \
          --optimize-autoloader \
-         --working-dir=/var/www/html \
+         --working-dir=/app \
     && mkdir -p Web/uploads/images Web/uploads/reservation tpl_c \
-    && chown -R application:application /var/www/html /config
+    && chown -R application:application /app /config
 
 RUN mkdir -p /var/log/librebooking/log \
     && chown -R application:application /var/log/librebooking
 
-VOLUME ["/config", "/var/www/html/Web/uploads/images", "/var/www/html/Web/uploads/reservation"]
+VOLUME ["/config", "/app/Web/uploads/images", "/app/Web/uploads/reservation"]
 
 #USER application
