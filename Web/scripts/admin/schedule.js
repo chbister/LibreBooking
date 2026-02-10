@@ -149,6 +149,8 @@ function ScheduleManagement(opts) {
 
 		elements.scheduleList.on('click', '.changePeakTimes', function (e) {
 			e.preventDefault();
+			document.getElementById('peakStartTime').classList.remove('is-invalid');
+			document.getElementById('peakEndTime').classList.remove('is-invalid');
 			showPeakTimesDialog(getActiveScheduleId());
 		});
 
@@ -285,7 +287,7 @@ function ScheduleManagement(opts) {
 		ConfigureAsyncForm(elements.changeLayoutForm, getSubmitCallback(options.changeLayoutAction));
 		ConfigureAsyncForm(elements.addForm, getSubmitCallback(options.addAction), null, handleAddError);
 		ConfigureAsyncForm(elements.deleteForm, getSubmitCallback(options.deleteAction));
-		ConfigureAsyncForm(elements.peakTimesForm, getSubmitCallback(options.peakTimesAction), refreshPeakTimes);
+		ConfigureAsyncForm(elements.peakTimesForm, getSubmitCallback(options.peakTimesAction), refreshPeakTimes, null, { onBeforeSubmit: validateTimes });
 		ConfigureAsyncForm(elements.availabilityForm, getSubmitCallback(options.availabilityAction), refreshAvailability);
 		ConfigureAsyncForm(elements.switchLayoutForm, getSubmitCallback(options.switchLayout));
 		ConfigureAsyncForm(elements.deleteCustomTimeSlotForm, getSubmitCallback(options.deleteLayoutSlot), afterDeleteSlot);
@@ -516,6 +518,8 @@ function ScheduleManagement(opts) {
 			peakOnAllYearChanged();
 		}
 
+		wireUpTimePickers(startTime, endTime);
+
 		elements.deletePeakTimes.val('');
 		elements.peakTimesDialog.modal('show');
 	};
@@ -569,8 +573,8 @@ function ScheduleManagement(opts) {
 	var showAvailabilityDialog = function (scheduleId) {
 		var placeholder = $('[data-schedule-id=' + scheduleId + ']').find('.availabilityPlaceHolder');
 		var dates = placeholder.find('.availableDates');
-		var startDate = formatDate(dates.data('start-date'));
-		var endDate = formatDate(dates.data('end-date'));
+		var startDate = dates.attr('data-start-date');
+		var endDate = dates.attr('data-end-date');
 		var hasAvailability = dates.data('has-availability') == '1';
 
 		//elements.availableAllYear.prop('checked', !hasAvailability);
@@ -584,16 +588,8 @@ function ScheduleManagement(opts) {
 		elements.availabilityDialog.modal('show');
 	};
 
-	function formatDate(dateString) {
-		var date = new Date(dateString);
-		var year = date.getFullYear();
-		var month = ('0' + (date.getMonth() + 1)).slice(-2);
-		var day = ('0' + date.getDate()).slice(-2);
-		return year + '-' + month + '-' + day;
-	}
-
 	var refreshAvailability = function (resultHtml) {
-		$('[data-schedule-id=' + getActiveScheduleId() + ']').find('.availabilityPlaceHolder').html(resultHtml);
+		$('[data-schedule-id=' + getActiveScheduleId() + ']').find('.availabilityContent').html(resultHtml);
 		elements.availabilityDialog.modal('hide');
 	};
 
@@ -698,4 +694,27 @@ function ScheduleManagement(opts) {
 		elements.deleteCustomLayoutDialog.hide();
 		_fullCalendar.fullCalendar('refetchEvents');
 	}
+
+	function wireUpTimePickers(startTime, endTime) {
+		document.querySelectorAll('.timepicker').forEach(el => {
+			if (el.id === 'peakStartTime') {
+				dateHelper.initTimePicker(el, startTime);
+			} else if (el.id === 'peakEndTime') {
+				dateHelper.initTimePicker(el, endTime);
+			} else {
+				dateHelper.initTimePicker(el);
+			}
+		});
+	}
+
+	var validateTimes = function () {
+		if (document.getElementById('peakAllDay').checked) {
+			return true;
+		}
+
+		return dateHelper.ValidateTimeRangeElements(
+			document.getElementById('peakStartTime'),
+			document.getElementById('peakEndTime')
+		);
+	};
 }

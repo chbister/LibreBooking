@@ -26,11 +26,9 @@ class en_us extends Language
         $dates['short_reservation_date'] = 'n/j/y g:i A';
         $dates['dashboard'] = 'D, n/d Y g:i A';
         $dates['period_time'] = 'g:i A';
-        $dates['timepicker'] = 'h:i a';
         $dates['mobile_reservation_date'] = 'n/j g:i A';
         $dates['general_date_js'] = 'mm/dd/yy';
         $dates['general_time_js'] = 'h:mm tt';
-        $dates['timepicker_js'] = 'h:i a';
         $dates['momentjs_datetime'] = 'M/D/YY h:mm A';
         $dates['calendar_time'] = 'h:mmt';
         $dates['calendar_dates'] = 'M d';
@@ -725,6 +723,7 @@ class en_us extends Language
         $strings['DeleteBlackoutsBefore'] = 'Delete blackout times before';
         $strings['DeletedReservations'] = 'Deleted Reservations';
         $strings['DeleteReservationsBefore'] = 'Delete reservations before';
+        $strings['PermanentlyPurgeAllDeletedReservations'] = 'Permanently purge all deleted reservations';
         $strings['SwitchToACustomLayout'] = 'Switch to a custom layout';
         $strings['SwitchToAStandardLayout'] = 'Switch to a standard layout';
         $strings['ThisScheduleUsesACustomLayout'] = 'This schedule uses a custom layout';

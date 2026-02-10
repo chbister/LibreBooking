@@ -86,16 +86,11 @@
     {if isset($Select2) && $Select2}
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     {/if}
-    {if isset($Timepicker) && $Timepicker}
-        {cssfile src="scripts/css/timePicker.css" rel="stylesheet"}
-    {/if}
     {if isset($Fullcalendar) && $Fullcalendar}
         {cssfile src="scripts/css/fullcalendar.min.css"}
         <link rel='stylesheet' type='text/css' href='{$Path}scripts/css/fullcalendar.print.css' media='print' />
     {/if}
 
-    {jsfile src="js/jquery-ui-timepicker-addon.js"}
-    {cssfile src="scripts/css/jquery-ui-timepicker-addon.css"}
     {cssfile src="librebooking.css"}
     {if isset($cssFiles) && $cssFiles neq ''}
         {assign var='CssFileList' value=$cssFiles|split:','}
@@ -384,7 +379,7 @@
                                         </li>
                                         <li id="navNewVersion" class="new-version">
                                             <a class="dropdown-item"
-                                                href="https://github.com/LibreBooking/app/releases">{translate key=WhatsNew}</a>
+                                                href="https://github.com/LibreBooking/librebooking/releases">{translate key=WhatsNew}</a>
                                         </li>
                                     {/if}
                                 </ul>
@@ -395,11 +390,11 @@
                                 data-bs-toggle="dropdown">{translate key="Help"}</a>
                             <ul class="dropdown-menu  dropdown-menu-end">
                                 <li id="navHelp"><a class="dropdown-item"
-                                        href="https://github.com/LibreBooking/app/wiki">{translate key=Help}</a>
+                                        href="https://github.com/LibreBooking/librebooking/wiki">{translate key=Help}</a>
                                 </li>
                                 {if isset($CanViewAdmin) && $CanViewAdmin}
                                     <li id="navHelpAdmin"><a class="dropdown-item"
-                                            href="https://github.com/LibreBooking/app/wiki/Administration">{translate key=Administration}</a>
+                                            href="https://github.com/LibreBooking/librebooking/wiki/Administration">{translate key=Administration}</a>
                                     </li>
                                 {/if}
                                 <li id="navAbout"><a class="dropdown-item"
