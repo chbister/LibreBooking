@@ -152,8 +152,17 @@ class LoginPresenter
         }
 
         $id = $this->_page->GetEmailAddress();
+        $isValid = false;
+        try {
+            $isValid = $this->authentication->Validate($id, $this->_page->GetPassword());
+        } catch (Throwable $ex) {
+            Log::Error('Authentication failure for user %s: %s', $id, $ex->getMessage());
+            $this->_page->SetLoginErrorMessage(message: $this->GetLdapErrorMessage(ex: $ex));
+            $this->_page->SetShowLoginError();
+            return;
+        }
 
-        if ($this->authentication->Validate($id, $this->_page->GetPassword())) {
+        if ($isValid) {
             $context = new WebLoginContext(new LoginData($this->_page->GetPersistLogin(), $this->_page->GetSelectedLanguage()));
             $this->authentication->Login($id, $context);
             $this->_Redirect();
@@ -162,6 +171,31 @@ class LoginPresenter
             $this->authentication->HandleLoginFailure($this->_page);
             $this->_page->SetShowLoginError();
         }
+    }
+
+    /**
+     * Returns a user-facing message for known LDAP failures, or null for generic auth failures.
+     *
+     * @param Throwable $ex
+     * @return string|null
+     */
+    private function GetLdapErrorMessage(Throwable $ex): ?string
+    {
+        $message = $ex->getMessage();
+        $resources = Resources::GetInstance();
+
+        if (str_contains($message, 'Could not connect to LDAP server') || str_contains($message, "Can't contact LDAP server")) {
+            return $resources->GetString(key: 'LdapConnectionErrorMessage');
+        }
+
+        $isMissingLdapLibrary = str_contains($message, 'pear/net_ldap2')
+            || preg_match('/Class\\s+"?Net_LDAP2"?\\s+not found/i', $message) === 1;
+
+        if ($isMissingLdapLibrary) {
+            return $resources->GetString(key: 'LdapDependencyMissingMessage');
+        }
+
+        return null;
     }
 
     public function postLogout()
@@ -263,9 +297,9 @@ class LoginPresenter
         $client->setClientId(Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_GOOGLE_CLIENT_ID));
         $client->setClientSecret(Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_GOOGLE_CLIENT_SECRET));
         $client->setRedirectUri(Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_GOOGLE_REDIRECT_URI));
-        $client->addScope("email");
-        $client->addScope("profile");
-        $client->setPrompt("select_account");
+        $client->addScope('email');
+        $client->addScope('profile');
+        $client->setPrompt('select_account');
         $GoogleUrl = $client->createAuthUrl();
 
         return $GoogleUrl;
@@ -351,7 +385,11 @@ class LoginPresenter
     public function GetOauth2Url()
     {
         // Retrieve Oauth2 configuration values
-        $baseUrl = rtrim(Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_OAUTH2_URL_AUTHORIZE), '/');
+        $removeTrailingSlash = Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_OAUTH2_STRIP_TRAILING_SLASH);
+        $baseUrl = Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_OAUTH2_URL_AUTHORIZE);
+        if ($removeTrailingSlash) {
+            $baseUrl = rtrim($baseUrl, '/');
+        }
         $clientId = Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_OAUTH2_CLIENT_ID);
         $redirectUri = $this->buildRedirectUri(Configuration::Instance()->GetKey(ConfigKeys::AUTHENTICATION_OAUTH2_REDIRECT_URI));
 

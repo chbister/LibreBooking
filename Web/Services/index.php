@@ -2,6 +2,9 @@
 
 define('ROOT_DIR', '../../');
 
+require_once(ROOT_DIR . 'lib/ComposerDependenciesGuard.php');
+EnsureComposerDependenciesInstalledForRequest();
+
 require_once(ROOT_DIR . 'lib/WebService/namespace.php');
 require_once(ROOT_DIR . 'lib/WebService/Slim/namespace.php');
 
@@ -55,7 +58,7 @@ RegisterAccessories($server, $registry);
 RegisterAccounts($server, $registry);
 
 $app->hook('slim.before.dispatch', function () use ($app, $server, $registry) {
-if (!Configuration::Instance()->GetKey(ConfigKeys::API_ENABLED, new BooleanConverter())) {
+    if (!Configuration::Instance()->GetKey(ConfigKeys::API_ENABLED, new BooleanConverter())) {
         $app->halt(RestResponse::SERVICE_UNAVAILABLE, 'LibreBooking API is disabled. Set ["api"]["enabled"] = true');
     }
 
@@ -101,12 +104,12 @@ function RegisterHelp(SlimWebServiceRegistry $registry, \Slim\Slim $app)
     $app->get('/', function () use ($registry, $app) {
         // Print API documentation
         ApiHelpPage::Render($registry, $app);
-    })->name("Default");
+    })->name('Default');
 
     $app->get('/Help', function () use ($registry, $app) {
         // Print API documentation
         ApiHelpPage::Render($registry, $app);
-    })->name("Help");
+    })->name('Help');
 }
 
 function RegisterAuthentication(SlimServer $server, SlimWebServiceRegistry $registry)
@@ -119,8 +122,8 @@ function RegisterAuthentication(SlimServer $server, SlimWebServiceRegistry $regi
     );
 
     $category = new SlimWebServiceRegistryCategory('Authentication');
-    $category->AddPost('SignOut/', [$webService, 'SignOut'], WebServices::Logout);
-    $category->AddPost('Authenticate/', [$webService, 'Authenticate'], WebServices::Login);
+    $category->AddPost('SignOut', [$webService, 'SignOut'], WebServices::Logout);
+    $category->AddPost('Authenticate', [$webService, 'Authenticate'], WebServices::Login);
     $registry->AddCategory($category);
 }
 
@@ -149,7 +152,13 @@ function RegisterResources(SlimServer $server, SlimWebServiceRegistry $registry)
 {
     $resourceRepository = new ResourceRepository();
     $attributeService = new AttributeService(new AttributeRepository());
-    $webService = new ResourcesWebService($server, $resourceRepository, $attributeService, new ReservationViewRepository());
+    $webService = new ResourcesWebService(
+        server: $server,
+        resourceRepository: $resourceRepository,
+        attributeService: $attributeService,
+        reservationRepository: new ReservationViewRepository(),
+        scheduleRepository: new ScheduleRepository()
+    );
     $writeWebService = new ResourcesWriteWebService($server, new ResourceSaveController($resourceRepository, new ResourceRequestValidator($attributeService)));
 
     $roGroupId = GetConfigGroup(ConfigKeys::API_RESOURCES_RO_GROUP);
@@ -269,7 +278,7 @@ function RegisterAccounts(SlimServer $server, SlimWebServiceRegistry $registry)
     $category->AddPost('/', [$webService, 'Create'], WebServices::CreateAccount);
     $category->AddSecurePost('/:userId', [$webService, 'Update'], WebServices::UpdateAccount);
     $category->AddSecurePost('/:userId/Password', [$webService, 'UpdatePassword'], WebServices::UpdateAccountPassword);
-    $category->AddSecureGet('/:userId',  [$webService, 'GetAccount'], WebServices::GetAccount);
+    $category->AddSecureGet('/:userId', [$webService, 'GetAccount'], WebServices::GetAccount);
 
     $registry->AddCategory($category);
 }

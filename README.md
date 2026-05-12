@@ -10,7 +10,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/LibreBooking/librebooking?style=flat)](https://github.com/LibreBooking/librebooking/network)
 
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-brightgreen.svg?logo=php)](https://www.php.net/)
-[![MySQL](https://img.shields.io/badge/MySQL-5.5%2B-blue.svg?logo=mysql)](https://www.mysql.com/)
+[![Database](https://img.shields.io/badge/Database-MySQL%20%3E%3D8.0%20%7C%20MariaDB%20%3E%3D10.6-blue.svg?logo=mysql)](https://www.mysql.com/)
 ![Platform](https://img.shields.io/badge/Platform-Web-lightgrey)
 ![Status](https://img.shields.io/badge/Status-Active-green)
 
@@ -69,7 +69,7 @@ significantly and diverged from the original project.
 
 A live demo instance of LibreBooking is available for testing:
 
-[Try the demo](https://librebooking-demo.fly.dev/)
+[Try the demo](https://librebooking-demo.fly.dev/Web/)
 
 | Role  | Username | Password    |
 | ----- | -------- | ----------- |
@@ -93,9 +93,10 @@ Note: This instance is public and **resets every 20 minutes** to ensure a clean 
 
 To run LibreBooking from a prebuilt release, your server needs:
 
-- PHP >= 8.2 with the  extensions: pdo, mbstring, openssl, tokenizer, json, curl, xml, ctype, bcmath, fileinfo
+- PHP >= 8.2 with the extensions: ctype, curl, fileinfo, json, mbstring, mysqli, openssl, pdo, pdo_mysql, tokenizer, xml
+- Optional PHP extensions: bcmath (needed for Active Directory authentication), gd (image processing), ldap (LDAP authentication)
 - A web server like Apache or Nginx
-- MySQL >= 5.5
+- MySQL >= 8.0 (2018) or MariaDB >= 10.6 (2021)
 - Composer (for managing PHP dependencies)
 - Git (optional, useful for cloning the repository or managing updates)
 

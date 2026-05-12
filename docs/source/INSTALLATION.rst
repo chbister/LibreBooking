@@ -115,6 +115,9 @@ instructions.
 
 This is because there is no backend database configured yet. So continue on …
 
+If you want you could try running the :ref:`Preflight Check <preflight-check>` now to check your
+work. But make sure to continue on to the next section to setup the database.
+
 Database Setup
 ~~~~~~~~~~~~~~
 Edit the configuration file to set up the database connection.
@@ -142,8 +145,8 @@ modify tables within it.
 
 You have 2 ways to set up your database for the application to work.
 
-Automatic Database Setup
-^^^^^^^^^^^^^^^^^^^^^^^^
+Automatic Database Setup (Recommended)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You must have the application configured correctly before running the
 automated install.
@@ -188,6 +191,8 @@ Manual Database Setup
 | - ``database_schema/upgrades/*/data.sql`` - Database data upgrades
 | - ``create-data.sql`` - Inserts initial application data
 | - ``sample-data-utf8.sql`` - Sample data for testing (optional)
+| - ``sample-data-large-utf8.sql`` - Larger sample dataset with 150 resources,
+|   20 users, 9 groups, etc. (optional, requires ``sample-data-utf8.sql`` first)
 |
 
 .. important::
@@ -199,6 +204,8 @@ Manual Database Setup
    2. All upgrade scripts in ``database_schema/upgrades/`` (in version order)
    3. ``create-data.sql`` - Initial data (depends on upgraded schema)
    4. ``sample-data-utf8.sql`` (optional) - Sample data for testing
+   5. ``sample-data-large-utf8.sql`` (optional) - Larger sample dataset;
+      must be loaded after ``sample-data-utf8.sql``
 
    **Warning:** Simply running create-schema.sql followed by create-data.sql will fail
    because create-data.sql expects the fully upgraded schema including all modifications
@@ -252,6 +259,83 @@ file.
 | Optionally - import ``/database_schema/sample-data-utf8.sql`` to add
   sample application data (this will create 2 test users: admin/password
   and user/password for testing your installation).
+| Optionally - import ``/database_schema/sample-data-large-utf8.sql`` to add
+  a larger sample dataset (150 resources, 20 users, 9 groups). This file
+  must be loaded after ``sample-data-utf8.sql``.
+
+A helper script ``database_schema/setup-database.sh`` is provided that
+automates all of the above steps and optionally loads sample data:
+
+.. code-block:: bash
+
+   ./database_schema/setup-database.sh
+
+Scheduled Jobs (Cron)
+~~~~~~~~~~~~~~~~~~~~~
+
+LibreBooking requires background jobs for features like reminder emails.
+
+For stand-alone (non-container) deployments, set up host cron entries to
+execute the job scripts directly with PHP.
+Example crontab (adjust PHP binary path and LibreBooking path):
+
+.. code-block:: text
+
+   * * * * * /usr/bin/env php -f /var/www/librebooking/Jobs/autorelease.php
+   * * * * * /usr/bin/env php -f /var/www/librebooking/Jobs/sendreminders.php
+   * * * * * /usr/bin/env php -f /var/www/librebooking/Jobs/sendmissedcheckin.php
+   * * * * * /usr/bin/env php -f /var/www/librebooking/Jobs/sendwaitlist.php
+   0 0 * * * /usr/bin/env php -f /var/www/librebooking/Jobs/sendseriesend.php
+   0 0 * * * /usr/bin/env php -f /var/www/librebooking/Jobs/sessioncleanup.php
+   0 1 * * * /usr/bin/env php -f /var/www/librebooking/Jobs/deleteolddata.php
+
+.. _preflight-check:
+
+Preflight Check
+~~~~~~~~~~~~~~~
+
+At any point during or after installation, you can run the preflight check to
+verify that your server meets all the requirements for LibreBooking:
+
+.. code-block:: bash
+
+    composer preflight
+
+This validates:
+
+- PHP version and required/optional extensions
+- Composer dependencies are installed
+- Configuration file (``config/config.php``) exists and is valid
+- Required directories are writable
+- Database connection and schema
+
+Missing or invalid configuration will be reported as a failure. Database issues
+may also be reported as either failures or warnings, depending on the issue.
+
+To pass options, use ``--`` so Composer forwards them to the script:
+
+.. code-block:: bash
+
+    composer preflight -- --skip-db
+    composer preflight -- --help
+
+You can also run the script directly with PHP:
+
+.. code-block:: bash
+
+    php lib/preflight.php --skip-db
+
+Available options:
+
+``--no-color``
+  Disable colored output
+
+``--skip-db``
+  Skip the database connection check
+
+``--help``
+  Show help
+
 
 You are done. Try to load the application at (eg.
 http://yourhostname/librebooking/Web/).
@@ -363,7 +447,7 @@ Quick Start with Docker Compose
             - MYSQL_ROOT_PASSWORD=your_secure_root_password
 
         app:
-          image: librebooking/librebooking:develop
+          image: librebooking/librebooking:develop # or use tagged version
           restart: always
           depends_on:
             - db
@@ -426,17 +510,14 @@ Docker Environment Variables
 ``LB_ENV``
   Environment mode: ``production`` (default) or ``dev``
 
-``LB_LOG_FOLDER``
+``LB_LOGGING_FOLDER``
   Log directory (default: ``/var/log/librebooking``)
 
-``LB_LOG_LEVEL``
+``LB_LOGGING_LEVEL``
   Logging level: ``none`` (default), ``debug``, ``error``
 
-``LB_LOG_SQL``
+``LB_LOGGING_SQL``
   Enable SQL logging: ``false`` (default), ``true``
-
-``LB_CRON_ENABLED``
-  Enable background cron jobs: ``false`` (default), ``true``
 
 Docker Image Versions
 ~~~~~~~~~~~~~~~~~~~~~
@@ -468,17 +549,34 @@ To persist data beyond container lifecycle, mount these directories:
 Background Jobs (Cron)
 ~~~~~~~~~~~~~~~~~~~~~~
 
-LibreBooking requires background jobs for features like reminder emails:
+LibreBooking requires background jobs for features like reminder emails.
+
+**Docker/Container deployments**
+
+The recommended approach is to run cron in a dedicated container instance.
+Run the main app container as non-root ``www-data``, and run a second
+container from the same image with ``root`` and
+``/usr/local/bin/cron.sh`` as the entrypoint.
+
+Example docker-compose services:
 
 .. code-block:: yaml
 
-   environment:
-     - LB_CRON_ENABLED=true
+   services:
+     app:
+       image: librebooking/librebooking:develop # or use tagged version
+       user: 'www-data'
+
+     cron:
+       image: librebooking/librebooking:develop # or use tagged version
+       user: 'root'
+       entrypoint: /usr/local/bin/cron.sh
 
 Or run them manually:
 
 .. code-block:: bash
 
+   # For example run the sendreminders.php job
    docker exec <container_name> php -f /var/www/html/Jobs/sendreminders.php
 
 Docker Troubleshooting

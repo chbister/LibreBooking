@@ -94,6 +94,8 @@ class en_us extends Language
         $strings['Error'] = 'Error';
         $strings['ReturnToPreviousPage'] = 'Return to the last page that you were on';
         $strings['UnknownError'] = 'Unknown Error';
+        $strings['DatabaseConnectionError'] = 'Unable to connect to the database server.<br/>Ask the website administrator to verify the database host, username, and password in <code>config/config.php</code>.';
+        $strings['DatabaseNotFoundError'] = 'Unable to select the configured database.<br/>Ask the website administrator to verify the database name in <code>config/config.php</code> and confirm the database has been created/initialized.';
         $strings['InsufficientPermissionsError'] = 'You do not have permission to access this resource';
         $strings['MissingReservationResourceError'] = 'A resource was not selected';
         $strings['MissingReservationScheduleError'] = 'A schedule was not selected';
@@ -132,6 +134,7 @@ class en_us extends Language
         $strings['LaterThisWeek'] = 'Later This Week';
         $strings['NextWeek'] = 'Next Week';
         $strings['SignOut'] = 'Sign Out';
+        $strings['JavascriptRequired'] = 'This application requires JavaScript to function properly. Please enable JavaScript in your browser settings.';
         $strings['LayoutDescription'] = 'Starts on %s, showing %s days at a time';
         $strings['AllResources'] = 'All Resources';
         $strings['TakeOffline'] = 'Take Offline';
@@ -818,6 +821,7 @@ class en_us extends Language
         $strings['CreateDatabase'] = 'Create the database';
         $strings['CreateDatabaseUser'] = 'Create the database user';
         $strings['PopulateExampleData'] = 'Import sample data. Creates admin account: admin/password and user account: user/password';
+        $strings['PopulateLargeExampleData'] = 'Also import large sample data. Adds more users, resources, groups, and reservations for realistic testing';
         $strings['DataWipeWarning'] = 'Warning: This will delete any existing data';
         $strings['RunInstallation'] = 'Run Installation';
         $strings['UpgradeNotice'] = 'You are upgrading from version <b>%s</b> to version <b>%s</b>';
@@ -841,6 +845,8 @@ class en_us extends Language
 
         // Errors
         $strings['LoginError'] = 'We could not match your username or password';
+        $strings['LdapConnectionErrorMessage'] = 'Could not connect to the LDAP server. Please contact your administrator.';
+        $strings['LdapDependencyMissingMessage'] = 'LDAP authentication is not available because pear/net_ldap2 is missing. Install it with: composer require pear/net_ldap2';
         $strings['ReservationFailed'] = 'Your reservation could not be made';
         $strings['MinNoticeError'] = 'This reservation requires advance notice. The earliest date and time that can be reserved is %s.';
         $strings['MinNoticeErrorUpdate'] = 'Changing this reservation requires advance notice. Reservations before %s are not allowed to be changed.';
@@ -853,6 +859,7 @@ class en_us extends Language
         $strings['ConflictingReservationDates'] = 'There are conflicting reservations on the following dates:';
         $strings['InstancesOverlapRule'] = 'Some instances of the reservation series overlap:';
         $strings['StartDateBeforeEndDateRule'] = 'The start date and time must be before the end date and time.';
+        $strings['RecurringWithoutTerminationRule'] = 'A termination date is required for recurring blackouts.';
         $strings['StartIsInPast'] = 'The start date and time cannot be in the past.';
         $strings['EmailDisabled'] = 'The administrator has disabled email notifications.';
         $strings['ValidLayoutRequired'] = 'Slots must be provided for all 24 hours of the day beginning and ending at 00:00.';
@@ -1068,8 +1075,8 @@ class en_us extends Language
         //End View Resource
 
         //Datatables
-        $strings['Info'] = "Showing page _PAGE_ of _PAGES_ of _MAX_";
-        $strings['LengthMenu'] = "Display _MENU_ records per page";
+        $strings['Info'] = 'Showing page _PAGE_ of _PAGES_ (_MAX_ total records)';
+        $strings['LengthMenu'] = 'Display _MENU_ records per page';
         //End Datatables
 
         $this->Strings = $strings;

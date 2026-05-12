@@ -69,10 +69,11 @@
 																data-type="select" data-pk="{$id}"
 																data-value="{$schedule->GetAdminGroupId()}"
 																data-name="{FormKeys::SCHEDULE_ADMIN_GROUP_ID}">
-																{if isset($GroupLookup[$schedule->GetAdminGroupId()])}
-																	{$GroupLookup[$schedule->GetAdminGroupId()]->Name|escape:'html'}
+																{assign var=adminGroupId value=$schedule->GetAdminGroupId()}
+																{if $adminGroupId !== null && isset($GroupLookup[$adminGroupId])}
+																	{$GroupLookup[$adminGroupId]->Name|escape:'html'}
 																{else}
-																	None
+																	{translate key='None'}
 																{/if}
 															</span>
 															{if $AdminGroups|default:array()|count > 0}
@@ -132,7 +133,7 @@
 																class="propertyValue defaultScheduleStyle inlineUpdate fw-bold text-decoration-underline"
 																data-type="select" data-pk="{$id}"
 																data-name="{FormKeys::SCHEDULE_DEFAULT_STYLE}"
-																data-value="{$schedule->GetDefaultStyle()}">{$StyleNames[$schedule->GetDefaultStyle()]}</span>
+																data-value="{$schedule->GetDefaultStyle()->value}">{$StyleNames[$schedule->GetDefaultStyle()->value]}</span>
 														</div>
 
 														{if $CreditsEnabled}
@@ -685,13 +686,11 @@
 							<div id="availableDates" class="d-flex align-items-center gap-1">
 								<label for="availabilityStartDate">{translate key=AvailableBetween}</label>
 								<label for="availabilityEndDate" class="visually-hidden">Available End Date</label>
-								<input type="date" id="availabilityStartDate"
-									class="form-control form-control-sm inline-block dateinput" />
-								<input type="hidden" id="formattedBeginDate" {formname key=AVAILABLE_BEGIN_DATE} />
-								-
-								<input type="date" id="availabilityEndDate"
-									class="form-control form-control-sm inline-block dateinput" />
-								<input type="hidden" id="formattedEndDate" {formname key=AVAILABLE_END_DATE} />
+								<input type="text" id="availabilityStartDate" {formname key=AVAILABLE_BEGIN_DATE}
+									class="form-control form-control-sm w-auto" required />
+								<div class='mx-1'>-</div>
+								<input type="text" id="availabilityEndDate" {formname key=AVAILABLE_END_DATE}
+									class="form-control form-control-sm w-auto" />
 							</div>
 						</div>
 					</div>
@@ -733,7 +732,7 @@
 
 	<div id="customLayoutDialog" class="modal fade" tabindex="-1" role="dialog"
 		aria-labelledby="customLayoutDialogLabel" aria-hidden="true">
-		<div class="modal-dialog">
+		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="customLayoutDialogLabel">{translate key=ChangeLayout}</h5>
@@ -791,8 +790,8 @@
 						</div>
 						<div class="form-group">
 							<label class="fw-bold" for="maximumConcurrent">{translate key=Resources}</label>
-							<input type="number" class="form-control required" min="0" id="maximumConcurrent"
-								{formname key=MAXIMUM_CONCURRENT_RESERVATIONS} />
+							<input type="number" class="form-control form-control-sm required" min="0"
+								id="maximumConcurrent" {formname key=MAXIMUM_CONCURRENT_RESERVATIONS} />
 						</div>
 						<div class="clearfix"></div>
 					</div>
@@ -826,7 +825,7 @@
 						<div class="form-group">
 							<label class="fw-bold"
 								for="resourcesPerReservationResources">{translate key=Resources}</label>
-							<input type="number" class="form-control required" min="0"
+							<input type="number" class="form-control form-control-sm required" min="0"
 								id="resourcesPerReservationResources"
 								{formname key=MAXIMUM_RESOURCES_PER_RESERVATION} />
 						</div>
@@ -841,8 +840,8 @@
 		</form>
 	</div>
 
-	{control type="DatePickerSetupControl" ControlId="availabilityStartDate" AltId="formattedBeginDate" DefaultDate=$StartDate}
-	{control type="DatePickerSetupControl" ControlId="availabilityEndDate" AltId="formattedEndDate" DefaultDate=$EndDate}
+	{control type="DatePickerSetupControl" ControlId="availabilityStartDate" DefaultDate=$StartDate}
+	{control type="DatePickerSetupControl" ControlId="availabilityEndDate" DefaultDate=$EndDate}
 
 	{csrf_token}
 	{include file="javascript-includes.tpl" InlineEdit=true Fullcalendar=true DataTable=true}
@@ -850,7 +849,7 @@
 	{jsfile src="ajax-helpers.js"}
 	{jsfile src="date-helper.js"}
 	{jsfile src="admin/schedule.js"}
-	{jsfile src="js/jquery.form-3.09.min.js"}
+	{vendor_js src="jquery-form/3.09/jquery.form-3.09.min.js"}
 
 	<script type="text/javascript">
 		function setUpEditables() {
@@ -946,7 +945,8 @@
 						today: "{{translate key=Today}|escape:'javascript'}",
 						month: "{{translate key=Month}|escape:'javascript'}",
 						week: "{{translate key=Week}|escape:'javascript'}",
-						day: "{{translate key=Day}|escape:'javascript'}"
+						day: "{{translate key=Day}|escape:'javascript'}",
+						list: "{{translate key=List}|escape:'javascript'}"
 					},
 					defaultDate: '{Date::Now()->ToTimezone({$Timezone})->Format("Y-m-d")}',
 					eventsUrl: '{$smarty.server.SCRIPT_NAME}'

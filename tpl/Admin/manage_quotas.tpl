@@ -164,8 +164,8 @@
 
 
 						<div class="accordion-footer border-top pt-3">
-							{add_button class="btn-sm"}
-							{reset_button class="btn-sm"}
+							{add_button}
+							{reset_button}
 							{indicator}
 						</div>
 					</div>
@@ -259,8 +259,10 @@
 										<span class="fw-bold">{$scope}</span>.
 										{translate key=QuotaEnforcement args="$enforceHours,$enforceDays"}
 									</div>
-									<a href="#" quotaId="{$quota->Id}" class="delete float-end"><span
-											class="bi bi-trash3-fill text-danger icon remove"></span></a>
+									<a href="#" quotaId="{$quota->Id}" class="delete float-end"
+										aria-label="{translate key=Delete}">
+										<span class="bi bi-trash3-fill text-danger icon remove"
+											aria-hidden="true"></span></a>
 								</td>
 							</tr>
 						{foreachelse}
@@ -303,7 +305,7 @@
 	{jsfile src="ajax-helpers.js"}
 	{jsfile src="date-helper.js"}
 	{jsfile src="admin/quota.js"}
-	{jsfile src="js/jquery.form-3.09.min.js"}
+	{vendor_js src="jquery-form/3.09/jquery.form-3.09.min.js"}
 
 	<script type="text/javascript">
 		$(document).ready(function() {

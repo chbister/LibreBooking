@@ -197,7 +197,7 @@ class ResourceDisplayPresenter extends ActionPresenter
 
         $reservationList = $reservations->OnDateForResource($reservationDate, $resource->GetId());
 
-        /** @var ReservationListItem $next */
+        /** @var ReservationListItem|null $next */
         $next = null;
 
         /** @var ReservationListItem[] $upcoming */
@@ -260,7 +260,7 @@ class ResourceDisplayPresenter extends ActionPresenter
 
         if ($date->GetBegin()->GreaterThan($maxDate)) {
             $resultCollector->SetSaveSuccessfulMessage(false);
-            $resultCollector->SetErrors(["Unauthorized"]);
+            $resultCollector->SetErrors(['Unauthorized']);
             $success = false;
         } else {
 
@@ -389,17 +389,23 @@ class ReservationResultCollector implements IReservationSaveResultsView
     /**
      * @param array|string[] $messages
      */
-    public function SetRetryMessages($messages) {}
+    public function SetRetryMessages($messages)
+    {
+    }
 
     /**
      * @param bool $canBeRetried
      */
-    public function SetCanBeRetried($canBeRetried) {}
+    public function SetCanBeRetried($canBeRetried)
+    {
+    }
 
     /**
      * @param ReservationRetryParameter[] $retryParameters
      */
-    public function SetRetryParameters($retryParameters) {}
+    public function SetRetryParameters($retryParameters)
+    {
+    }
 
     /**
      * @return ReservationRetryParameter[]

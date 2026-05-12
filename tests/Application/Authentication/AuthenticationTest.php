@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once(ROOT_DIR . 'lib/Application/Authentication/namespace.php');
 require_once(ROOT_DIR . 'lib/Common/namespace.php');
 require_once(ROOT_DIR . 'lib/Server/namespace.php');
@@ -78,7 +80,7 @@ class AuthenticationTest extends TestBase
         $this->lname = 'Name';
         $this->email = 'my@email.com';
         $this->isAdmin = true;
-        $this->timezone = "America/Chicago";
+        $this->timezone = 'America/Chicago';
         $this->lastLogin = time();
         $this->homepageId = 2;
         $this->languageCode = 'en_us';

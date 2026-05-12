@@ -79,6 +79,8 @@ EOT;
         );
         echo $security;
 
+        echo "<div class='alert alert-warning mb-0'>⚠️ Use the Route URL as specified in regards to having or not having an ending <code>/</code> (forward slash) character.</div>";
+
         echo <<<EOT
                 </div>
             </div>
@@ -92,10 +94,10 @@ EOT;
             echo "<li class='list-group-item'>";
             echo "<a href='#{$category->Name()}' class='d-block small fw-semibold text-dark mb-1'>{$category->Name()}</a>";
             echo "<div class='ms-3'>";
-            echo "<a href='#{$category->Name()}-post' class='d-block small text-muted'>POST Services</a>";
-            echo "<a href='#{$category->Name()}-get' class='d-block small text-muted'>GET Services</a>";
-            echo "<a href='#{$category->Name()}-delete' class='d-block small text-muted'>DELETE Services</a>";
-            echo "</div></li>";
+            echo "<a href='#{$category->Name()}-post' class='d-block small text-muted'>POST Endpoints</a>";
+            echo "<a href='#{$category->Name()}-get' class='d-block small text-muted'>GET Endpoints</a>";
+            echo "<a href='#{$category->Name()}-delete' class='d-block small text-muted'>DELETE Endpoints</a>";
+            echo '</div></li>';
         }
 
         echo <<<EOT
@@ -110,7 +112,7 @@ EOT;
             echo "<h2 id='{$category->Name()}' class='mt-5'>{$category->Name()}</h2>";
 
             // POST
-            echo "<h6 id='{$category->Name()}-post' class='mt-3 text-muted'>POST Services</h6>";
+            echo "<h6 id='{$category->Name()}-post' class='mt-3 text-muted'>POST Endpoints</h6>";
             if (count($category->Posts()) === 0) {
                 echo "<p class='ms-2'><em>None</em></p>";
             } else {
@@ -123,26 +125,27 @@ EOT;
                     echo "<div class='accordion-item'>";
                     echo "<h2 class='accordion-header' id='heading-$collapseId'>";
                     echo "<button class='accordion-button collapsed bg-success text-white' type='button' data-bs-toggle='collapse' data-bs-target='#$collapseId'>{$md->Name()}</button>";
-                    echo "</h2>";
+                    echo '</h2>';
                     echo "<div id='$collapseId' class='accordion-collapse collapse'>";
                     echo "<div class='accordion-body'>";
                     $request = $md->Request();
-                    self::EchoCommon($md, $service, $app);
-                    echo "<h5>Request</h5>";
+                    self::EchoCommonHeader($md, $service, $app);
+                    echo '<h5>Request</h5>';
                     if (is_object($request)) {
-                        echo "<div class='code'><pre>" . json_encode($request, JSON_PRETTY_PRINT) . "</pre></div>";
+                        echo "<div class='code'><pre>" . json_encode($request, JSON_PRETTY_PRINT) . '</pre></div>';
                     } elseif (is_null($request)) {
-                        echo "<p><em>None</em></p>";
+                        echo '<p><em>None</em></p>';
                     } else {
                         echo "<p>Unstructured request of type <i>$request</i></p>";
                     }
-                    echo "</div></div></div>";
+                    self::EchoResponse($md);
+                    echo '</div></div></div>';
                 }
-                echo "</div>";
+                echo '</div>';
             }
 
             // GET
-            echo "<h6 id='{$category->Name()}-get' class='mt-3 text-muted'>GET Services</h6>";
+            echo "<h6 id='{$category->Name()}-get' class='mt-3 text-muted'>GET Endpoints</h6>";
             if (count($category->Gets()) === 0) {
                 echo "<p class='ms-2'><em>None</em></p>";
             } else {
@@ -155,17 +158,17 @@ EOT;
                     echo "<div class='accordion-item'>";
                     echo "<h2 class='accordion-header' id='heading-$collapseId'>";
                     echo "<button class='accordion-button collapsed bg-primary text-white' type='button' data-bs-toggle='collapse' data-bs-target='#$collapseId'>{$md->Name()}</button>";
-                    echo "</h2>";
+                    echo '</h2>';
                     echo "<div id='$collapseId' class='accordion-collapse collapse'>";
                     echo "<div class='accordion-body'>";
                     self::EchoCommon($md, $service, $app);
-                    echo "</div></div></div>";
+                    echo '</div></div></div>';
                 }
-                echo "</div>";
+                echo '</div>';
             }
 
             // DELETE
-            echo "<h6 id='{$category->Name()}-delete' class='mt-3 text-muted'>DELETE Services</h6>";
+            echo "<h6 id='{$category->Name()}-delete' class='mt-3 text-muted'>DELETE Endpoints</h6>";
             if (count($category->Deletes()) === 0) {
                 echo "<p class='ms-2'><em>None</em></p>";
             } else {
@@ -178,13 +181,13 @@ EOT;
                     echo "<div class='accordion-item'>";
                     echo "<h2 class='accordion-header' id='heading-$collapseId'>";
                     echo "<button class='accordion-button collapsed bg-danger text-white' type='button' data-bs-toggle='collapse' data-bs-target='#$collapseId'>{$md->Name()}</button>";
-                    echo "</h2>";
+                    echo '</h2>';
                     echo "<div id='$collapseId' class='accordion-collapse collapse'>";
                     echo "<div class='accordion-body'>";
                     self::EchoCommon($md, $service, $app);
-                    echo "</div></div></div>";
+                    echo '</div></div></div>';
                 }
-                echo "</div>";
+                echo '</div>';
             }
         }
 
@@ -199,10 +202,15 @@ EOT;
 
     private static function EchoCommon(SlimServiceMetadata $md, $endpoint, Slim\Slim $app)
     {
-        $response = $md->Response();
+        self::EchoCommonHeader($md, $endpoint, $app);
+        self::EchoResponse($md);
+    }
+
+    private static function EchoCommonHeader(SlimServiceMetadata $md, $endpoint, Slim\Slim $app)
+    {
         echo "<h5>Name</h5><p>{$md->Name()}</p>";
-        echo "<h5>Description</h5><p>" . nl2br($md->Description()) . "</p>";
-        echo "<h5>Route</h5><p><code>" . $app->urlFor($endpoint->RouteName()) . "</code></p>";
+        echo '<h5>Description</h5><p>' . nl2br($md->Description()) . '</p>';
+        echo '<h5>Route</h5><p><code>' . $app->urlFor($endpoint->RouteName()) . '</code></p>';
 
         if ($endpoint->IsSecure()) {
             echo "<p class='secure'>🔒 This service is secure and requires authentication</p>";
@@ -210,12 +218,16 @@ EOT;
         if ($endpoint->IsLimitedToAdmin()) {
             echo "<p class='admin'>⚠️ This service is only available to application administrators</p>";
         }
+    }
 
-        echo "<h5>Response</h5>";
+    private static function EchoResponse(SlimServiceMetadata $md)
+    {
+        $response = $md->Response();
+        echo '<h5>Response</h5>';
         if (is_object($response)) {
-            echo "<div class='code'><pre>" . json_encode($response, JSON_PRETTY_PRINT) . "</pre></div>";
+            echo "<div class='code'><pre>" . json_encode($response, JSON_PRETTY_PRINT) . '</pre></div>';
         } elseif (is_null($response)) {
-            echo "<p><em>None</em></p>";
+            echo '<p><em>None</em></p>';
         } else {
             echo "<p>Unstructured response of type <i>$response</i></p>";
         }
